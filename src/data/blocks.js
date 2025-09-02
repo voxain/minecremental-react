@@ -8,7 +8,7 @@ export const blockData = {
     hardness: 4,
     toughness: 1,
     class: "wood",
-    image: "/img/blocks/oak.png",
+    image: import.meta.env.BASE_URL + "img/blocks/oak.png",
   },
   dirt: {
     id: "dirt",
@@ -16,7 +16,7 @@ export const blockData = {
     hardness: 2,
     toughness: 1,
     class: "soil",
-    image: "/img/blocks/dirt.png",
+    image: import.meta.env.BASE_URL + "img/blocks/dirt.png",
   },
   stone: {
     id: "stone",
@@ -24,7 +24,7 @@ export const blockData = {
     hardness: 4,
     toughness: 2,
     class: "rock",
-    image: "/img/blocks/stone.png",
+    image: import.meta.env.BASE_URL + "img/blocks/stone.png",
   },
   coal: {
     id: "coal",
@@ -32,7 +32,7 @@ export const blockData = {
     hardness: 8,
     toughness: 2,
     class: "rock",
-    image: "/img/blocks/coal.png",
+    image: import.meta.env.BASE_URL + "img/blocks/coal.png",
   },
   iron: {
     id: "iron",
@@ -40,7 +40,7 @@ export const blockData = {
     hardness: 8,
     toughness: 3,
     class: "rock",
-    image: "/img/blocks/iron.png",
+    image: import.meta.env.BASE_URL + "img/blocks/iron.png",
   },
   emerald: {
     id: "emerald",
@@ -48,6 +48,6 @@ export const blockData = {
     hardness: 12,
     toughness: 4,
     class: "rock",
-    image: "/img/blocks/emerald.png",
+    image: import.meta.env.BASE_URL + "img/blocks/emerald.png",
   },
 };

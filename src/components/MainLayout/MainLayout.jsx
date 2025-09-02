@@ -31,7 +31,7 @@ export function MainLayout() {
           <div className="flex w-20">
             <img
               className="size-6"
-              src="/img/currencies/copper.png"
+              src={import.meta.env.BASE_URL + "img/currencies/copper.png"}
               alt="Copper Coin"
               title="Copper Coins"
             />
@@ -40,7 +40,7 @@ export function MainLayout() {
           <div className="flex w-20">
             <img
               className="size-6"
-              src="/img/currencies/silver.png"
+              src={import.meta.env.BASE_URL + "img/currencies/silver.png"}
               alt="Silver Coin"
               title="Silver Coins"
             />

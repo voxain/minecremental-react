@@ -1,6 +1,5 @@
 // Mining logic extracted from App.jsx — pure function operating on gameLogic
 import { layerData } from "../data/layers";
-import { blockData } from "../data/blocks";
 
 // mineBlock performs a single mining 'action' using the provided gameLogic.
 // It mirrors the behavior previously embedded in App.jsx.

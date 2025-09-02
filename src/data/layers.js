@@ -5,7 +5,7 @@ export const layerData = [
     id: "overworld",
     name: "Overworld",
     description: "Everything above the ground. Time to punch trees.",
-    icon: "/img/blocks/tree.png",
+    icon: import.meta.env.BASE_URL + "img/blocks/tree.png",
     depth: 10,
     layerBlocks: [{ block: blockData.wood, dropRate: 500 }],
   },
@@ -14,7 +14,7 @@ export const layerData = [
     name: "Dirt Layer",
     description:
       "The first layer of the ground. It consists of soft soil and easily extractable materials.",
-    icon: "/img/blocks/dirt.png",
+    icon: import.meta.env.BASE_URL + "img/blocks/dirt.png",
     depth: 50,
     layerBlocks: [
       { block: blockData.dirt, dropRate: 100 },
@@ -26,7 +26,7 @@ export const layerData = [
     name: "Stone Layer",
     description:
       "The second layer of the ground. It consists of hard rock and contains valuable minerals.",
-    icon: "/img/blocks/stone.png",
+    icon: import.meta.env.BASE_URL + "img/blocks/stone.png",
     depth: 100,
     layerBlocks: [
       { block: blockData.stone, dropRate: 100 },
