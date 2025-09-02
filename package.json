@@ -12,8 +12,8 @@
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",
     "@tailwindcss/vite": "^4.1.12",
+    "moment": "^2.30.1",
     "radix-ui": "^1.4.3",
-    "moment": "^2.29.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.12"
