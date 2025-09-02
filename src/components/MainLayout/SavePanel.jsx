@@ -14,8 +14,13 @@ export default function SavePanel({
   autosaveEnabled,
   onToggleAutoSave,
   lastSaveAt,
+  // cheat handlers (optional)
+  onCheatUnlockAll,
+  onCheatGiveAll,
+  onCheatGiveItem,
 }) {
   const [, setTick] = useState(0);
+  const [cheatItemId, setCheatItemId] = useState("stone");
 
   // keep relative time reactive — update every 1 second while we have a timestamp
   useEffect(() => {
@@ -72,6 +77,37 @@ export default function SavePanel({
         <button onClick={onClear} className="border p-1">
           Clear
         </button>
+      </div>
+      <div className="mt-4">
+        <h3 className="text-sm">Cheats</h3>
+        <div className="flex gap-2 items-center mt-2">
+          <button
+            onClick={() => onCheatUnlockAll && onCheatUnlockAll()}
+            className="border p-1 bg-yellow-200"
+          >
+            Unlock All Layers
+          </button>
+          <button
+            onClick={() => onCheatGiveAll && onCheatGiveAll()}
+            className="border p-1 bg-yellow-200"
+          >
+            Give All Items
+          </button>
+        </div>
+        <div className="flex gap-2 items-center mt-2">
+          <input
+            className="border p-1 text-xs"
+            value={cheatItemId}
+            onChange={(e) => setCheatItemId(e.target.value)}
+            placeholder="item id (e.g. stone)"
+          />
+          <button
+            onClick={() => onCheatGiveItem && onCheatGiveItem(cheatItemId)}
+            className="border p-1 bg-yellow-200"
+          >
+            Give Item x999
+          </button>
+        </div>
       </div>
     </div>
   );

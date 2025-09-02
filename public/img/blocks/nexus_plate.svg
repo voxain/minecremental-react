@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#0b1020"/>
+  <rect x="24" y="24" width="80" height="80" fill="#2b3b5a" stroke="#6fb2ff" stroke-width="3"/>
+  <text x="64" y="116" font-family="Arial" font-size="10" fill="#aee" text-anchor="middle">Nexus Plate</text>
+</svg>

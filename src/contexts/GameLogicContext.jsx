@@ -415,6 +415,66 @@ export function GameLogicProvider({ children }) {
       push: pushConsole,
       clear: clearConsole,
     },
+    // Cheats for debugging / rapid progression
+    cheats: {
+      unlockLayer: (idx) => {
+        if (typeof idx !== "number") return;
+        setUnlockedLayers((prev) => {
+          const copy = Array.isArray(prev)
+            ? [...prev]
+            : Array(layerData.length).fill(false);
+          if (idx >= 0 && idx < layerData.length) copy[idx] = true;
+          return copy;
+        });
+        try {
+          const name =
+            (layerData[idx] && layerData[idx].name) || `Layer ${idx}`;
+          pushConsole(`Cheat: Unlocked layer: ${name}`, {
+            severity: "important",
+          });
+        } catch (e) {
+          void e;
+        }
+      },
+      unlockAllLayers: () => {
+        setUnlockedLayers(Array.from({ length: layerData.length }, () => true));
+        // also mark progress complete so other systems relying on layerProgress see full values
+        setLayerProgress(layerData.map((l) => (l && l.depth) || 0));
+        pushConsole("Cheat: All layers unlocked", { severity: "important" });
+      },
+      giveItem: (itemId, qty = 999) => {
+        if (!itemId) return;
+        setInvContents((prev = {}) => {
+          const copy = { ...(prev || {}) };
+          copy[itemId] = (copy[itemId] || 0) + Number(qty || 0);
+          return copy;
+        });
+        pushConsole(`Cheat: Granted ${qty} x ${itemId}`, { severity: "info" });
+      },
+      giveAllItems: (qty = 999) => {
+        // populate inventory with all known blocks
+        const all = {};
+        try {
+          Object.keys(blockData).forEach((k) => {
+            all[k] = Number(qty || 0);
+          });
+        } catch (e) {
+          void e;
+        }
+        setInvContents(all);
+        // also grant all tools and unlock them
+        try {
+          const allToolIds = Object.keys(toolsData || {});
+          setOwnedTools(allToolIds);
+          setUnlockedTools(allToolIds);
+        } catch (e) {
+          void e;
+        }
+        pushConsole("Cheat: Granted all items and tools", {
+          severity: "important",
+        });
+      },
+    },
     // Skip the current front block and push a newly-determined block
     skipCurrentBlock: () => {
       // select a new block by layer drop rates (similar to mining)

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#131314"/>
+  <g>
+    <path d="M20 34 C40 10, 88 10, 108 34 L96 50 C80 34, 44 34, 20 50 Z" fill="#6e6e6e" stroke="#4a4a4a" stroke-width="2"/>
+  </g>
+  <text x="64" y="116" font-family="Arial" font-size="10" fill="#ddd" text-anchor="middle">Meteor Iron</text>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#06202b"/>
+  <rect x="58" y="20" width="8" height="76" fill="#aaffdd"/>
+  <text x="64" y="116" font-family="Arial" font-size="10" fill="#dff" text-anchor="middle">Chrono Blade</text>
+</svg>

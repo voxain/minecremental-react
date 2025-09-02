@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#061022"/>
+  <rect x="28" y="28" width="72" height="72" fill="#4fb2ff" opacity="0.12" stroke="#89d7ff" stroke-width="2"/>
+  <text x="64" y="116" font-family="Arial" font-size="10" fill="#9fd" text-anchor="middle">Cosmic Glass</text>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#05030a"/>
+  <rect x="20" y="20" width="88" height="88" fill="#111" stroke="#2b2b5a" stroke-width="3"/>
+  <text x="64" y="112" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="#8fb2ff">Voidstone</text>
+</svg>

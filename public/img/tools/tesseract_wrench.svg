@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#081220"/>
+  <polygon points="40,64 88,64 64,40" fill="#8fffdc"/>
+  <text x="64" y="116" font-family="Arial" font-size="10" fill="#dff" text-anchor="middle">Tesseract Wrench</text>
+</svg>

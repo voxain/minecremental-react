@@ -229,6 +229,23 @@ export function MainLayout() {
             lastSaveAt={
               gameLogic && gameLogic.save ? gameLogic.save.lastSaveAt : null
             }
+            onCheatUnlockAll={() =>
+              gameLogic && gameLogic.cheats && gameLogic.cheats.unlockAllLayers
+                ? gameLogic.cheats.unlockAllLayers()
+                : null
+            }
+            onCheatGiveAll={() =>
+              gameLogic && gameLogic.cheats && gameLogic.cheats.giveAllItems
+                ? gameLogic.cheats.giveAllItems()
+                : null
+            }
+            onCheatGiveItem={(id) => {
+              if (!id) return;
+              gameLogic &&
+                gameLogic.cheats &&
+                gameLogic.cheats.giveItem &&
+                gameLogic.cheats.giveItem(id, 999);
+            }}
           />
 
           <ConsolePanel logger={logger} />

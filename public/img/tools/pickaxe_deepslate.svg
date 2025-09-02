@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#222"/>
+  <rect x="54" y="24" width="8" height="56" fill="#bfbfbf"/>
+  <rect x="40" y="20" width="48" height="16" fill="#7f7f7f"/>
+  <text x="64" y="112" font-family="Arial" font-size="10" fill="#ddd" text-anchor="middle">Deepslate Pick</text>
+</svg>

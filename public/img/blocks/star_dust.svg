@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <rect width="100%" height="100%" fill="#081224"/>
+  <g fill="#fff6a8">
+    <circle cx="32" cy="28" r="3"/>
+    <circle cx="54" cy="44" r="2"/>
+    <circle cx="90" cy="20" r="3"/>
+    <circle cx="74" cy="86" r="2"/>
+  </g>
+  <text x="64" y="116" font-family="Arial" font-size="10" fill="#dcdcdc" text-anchor="middle">Star Dust</text>
+</svg>

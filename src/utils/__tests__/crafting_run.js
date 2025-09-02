@@ -1,12 +1,9 @@
-// Generic crafting helper
-// gameLogic: the gameLogic object from context
-// itemDef: an object describing the craftable item, expected to have { id, recipe }
-export function craftItem(gameLogic, itemDef) {
+// Inline version of craftItem for quick runtime test
+function craftItem(gameLogic, itemDef) {
   if (!gameLogic) return { success: false, reason: "no_gamelogic" };
   if (!itemDef || !itemDef.recipe)
     return { success: false, reason: "no_recipe" };
 
-  // Prevent crafting an item that's already owned
   if (
     itemDef.id &&
     gameLogic.tools &&
@@ -18,14 +15,12 @@ export function craftItem(gameLogic, itemDef) {
 
   const inv = (gameLogic.inventory && gameLogic.inventory.content) || {};
 
-  // check requirements
   for (const [matId, needed] of Object.entries(itemDef.recipe)) {
     if (!inv[matId] || inv[matId] < needed) {
       return { success: false, reason: "insufficient_materials" };
     }
   }
 
-  // deduct using functional updater to avoid stale state
   if (gameLogic.inventory && gameLogic.inventory.setContent) {
     gameLogic.inventory.setContent((prev = {}) => {
       const copy = { ...prev };
@@ -37,12 +32,10 @@ export function craftItem(gameLogic, itemDef) {
     });
   }
 
-  // if the crafted item is a tool, equip it
   if (itemDef.id && gameLogic.current_tool && gameLogic.current_tool.set) {
     gameLogic.current_tool.set(itemDef);
   }
 
-  // add to owned tools list if available
   if (itemDef.id && gameLogic.tools && gameLogic.tools.add) {
     try {
       gameLogic.tools.add(itemDef.id);
@@ -51,11 +44,8 @@ export function craftItem(gameLogic, itemDef) {
     }
   }
 
-  // Manage unlocked tools visibility separate from ownership if available
   if (itemDef.id && gameLogic.unlocked && gameLogic.unlocked.add) {
     try {
-      // crafting a wood pickaxe could unlock stone pickaxe for crafting
-      // backward-compatible special-case: wood pickaxe unlocks stone pickaxe
       if (itemDef.id === "pickaxe_wood") {
         try {
           gameLogic.unlocked.add("pickaxe_stone");
@@ -63,7 +53,6 @@ export function craftItem(gameLogic, itemDef) {
           void 0;
         }
       }
-      // If the itemDef declares tools/items it should unlock, add them
       if (Array.isArray(itemDef.unlocks)) {
         for (const uid of itemDef.unlocks) {
           try {
@@ -73,14 +62,12 @@ export function craftItem(gameLogic, itemDef) {
           }
         }
       }
-      // ensure the crafted tool is marked unlocked as well
       gameLogic.unlocked.add(itemDef.id);
     } catch {
       // ignore
     }
   }
 
-  // Notify player via logger if available
   try {
     const name = itemDef.name || itemDef.id || "item";
     if (gameLogic && gameLogic.logger && gameLogic.logger.push) {
@@ -89,7 +76,6 @@ export function craftItem(gameLogic, itemDef) {
         severity: "important",
         meta: { id: itemDef.id },
       });
-      // if unlocking occurred, inform about unlocked items (simple heuristic)
       if (
         itemDef.id === "pickaxe_wood" &&
         gameLogic.logger &&
@@ -107,13 +93,56 @@ export function craftItem(gameLogic, itemDef) {
   return { success: true };
 }
 
-// Check whether an item is craftable with the current inventory
-export function isCraftable(gameLogic, itemDef) {
-  if (!itemDef || !itemDef.recipe) return false;
-  const inv =
-    (gameLogic && gameLogic.inventory && gameLogic.inventory.content) || {};
-  for (const [matId, needed] of Object.entries(itemDef.recipe)) {
-    if (!inv[matId] || inv[matId] < needed) return false;
-  }
-  return true;
+function makeMockGame() {
+  const unlocked = new Set();
+  const tools = new Set();
+  return {
+    inventory: {
+      content: { wood: 20, stone: 50, iron: 20 },
+      setContent(fn) {
+        this.content = fn(this.content);
+      },
+    },
+    current_tool: { set: (t) => (this.current = t) },
+    tools: { add: (id) => tools.add(id) },
+    unlocked: { add: (id) => unlocked.add(id), has: (id) => unlocked.has(id) },
+    logger: { push: () => {} },
+  };
 }
+
+const woodPick = {
+  id: "pickaxe_wood",
+  name: "Wood Pick",
+  recipe: { wood: 10 },
+  unlocks: ["pickaxe_stone"],
+};
+const exampleTool = {
+  id: "example_tool",
+  name: "Example",
+  recipe: { stone: 10 },
+  unlocks: ["foo", "bar"],
+};
+
+function testCrafting() {
+  const g = makeMockGame();
+  console.log(
+    "Before unlocked has pickaxe_stone?",
+    g.unlocked.has("pickaxe_stone")
+  );
+  const res = craftItem(g, woodPick);
+  console.log("craft wood pick result", res);
+  console.log(
+    "After unlocked has pickaxe_stone?",
+    g.unlocked.has("pickaxe_stone")
+  );
+  const res2 = craftItem(g, exampleTool);
+  console.log("craft example tool result", res2);
+  console.log(
+    "Unlocked foo?",
+    g.unlocked.has("foo"),
+    "Unlocked bar?",
+    g.unlocked.has("bar")
+  );
+}
+
+if (require.main === module) testCrafting();
