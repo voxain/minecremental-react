@@ -126,6 +126,15 @@ export function mineBlock(gameLogic) {
       }
       if (gameLogic.mining && gameLogic.mining.setProgress)
         gameLogic.mining.setProgress(0);
+      // increment per-layer mined depth (do not increment on skip)
+      try {
+        const layerIdx =
+          (gameLogic.current_layer && gameLogic.current_layer.value) || 0;
+        if (gameLogic.layer_progress && gameLogic.layer_progress.increment)
+          gameLogic.layer_progress.increment(layerIdx);
+      } catch (e) {
+        void e;
+      }
       // record new queued block (no console notification to avoid frequent noise)
     }
   }

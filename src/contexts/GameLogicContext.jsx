@@ -45,9 +45,19 @@ export function GameLogicProvider({ children }) {
   // Console / logger state for in-game messages
   const [consoleLines, setConsoleLines] = useState([]);
   const MAX_CONSOLE_LINES = 100;
-  const [autosaveEnabled, setAutosaveEnabled] = useState(true);
+  // Autosave disabled by default to avoid accidental overwrites
+  const [autosaveEnabled, setAutosaveEnabled] = useState(false);
   const autosaveIntervalRef = useRef(null);
   const [lastSaveAt, setLastSaveAt] = useState(null);
+
+  // track per-layer exploration progress (number of mined blocks in that layer)
+  const [layerProgress, setLayerProgress] = useState(
+    Array(layerData.length).fill(0)
+  );
+  // explicit unlocked layers array to ensure instant UI updates when unlocking
+  const [unlockedLayers, setUnlockedLayers] = useState(
+    layerData.map((_, i) => i === 0)
+  );
 
   const pushConsole = (text, opts = {}) =>
     utilPushConsole(setConsoleLines, MAX_CONSOLE_LINES, text, opts);
@@ -64,6 +74,67 @@ export function GameLogicProvider({ children }) {
   }
 
   const gameLogic = {
+    // per-layer progress helpers
+    layer_progress: {
+      value: layerProgress,
+      set: setLayerProgress,
+      // increment progress for a given layer (capped at layer.depth)
+      increment: (idx) => {
+        setLayerProgress((prev) => {
+          const copy = Array.isArray(prev)
+            ? [...prev]
+            : Array(layerData.length).fill(0);
+          if (idx < 0 || idx >= layerData.length) return copy;
+          const max = (layerData[idx] && layerData[idx].depth) || 0;
+          const oldVal = copy[idx] || 0;
+          const newVal = Math.min(oldVal + 1, max);
+          copy[idx] = newVal;
+          // if we just reached the bottom of this layer, notify discovery of next layer
+          if (oldVal < max && newVal >= max) {
+            try {
+              const nextIdx = idx + 1;
+              if (nextIdx < layerData.length) {
+                const nextName =
+                  (layerData[nextIdx] && layerData[nextIdx].name) ||
+                  `Layer ${nextIdx}`;
+                // mark the next layer unlocked immediately so UI updates without delay
+                setUnlockedLayers((prev) => {
+                  const copy = Array.isArray(prev)
+                    ? [...prev]
+                    : Array(layerData.length).fill(false);
+                  copy[nextIdx] = true;
+                  return copy;
+                });
+                pushConsole(
+                  `You have reached the bottom of ${layerData[idx].name}. ${nextName} unlocked!`,
+                  { severity: "important", bold: true }
+                );
+              } else {
+                pushConsole(
+                  `You have reached the bottom of ${layerData[idx].name}. No further layers.`,
+                  { severity: "important" }
+                );
+              }
+            } catch (e) {
+              void e;
+            }
+          }
+          return copy;
+        });
+      },
+      // check if a layer index is unlocked (layer 0 always unlocked)
+      isUnlocked: (idx) => {
+        if (idx === 0) return true;
+        if (
+          Array.isArray(unlockedLayers) &&
+          typeof unlockedLayers[idx] === "boolean"
+        )
+          return Boolean(unlockedLayers[idx]);
+        const prev = layerProgress[idx - 1] || 0;
+        const needed = (layerData[idx - 1] && layerData[idx - 1].depth) || 0;
+        return prev >= needed;
+      },
+    },
     block_queue: {
       value: queue,
       set: setQueue,
@@ -162,17 +233,23 @@ export function GameLogicProvider({ children }) {
       },
     },
     switchLayer: (new_layer) => {
-      setLayer(new_layer);
-      try {
-        const name =
-          (layerData[new_layer] && layerData[new_layer].name) ||
-          `Layer ${new_layer}`;
-        // Debounce layer switch logs per layer to avoid repeated toggles spamming console
-        if (shouldEmitLog(`layer::${new_layer}`))
-          pushConsole(`Switched to layer: ${name}`, { severity: "info" });
-      } catch (e) {
-        void e;
+      // only allow switching to unlocked layers
+      const canSwitch =
+        typeof new_layer === "number" &&
+        new_layer >= 0 &&
+        new_layer < layerData.length &&
+        (new_layer === 0 ||
+          (Array.isArray(unlockedLayers)
+            ? Boolean(unlockedLayers[new_layer])
+            : (layerProgress[new_layer - 1] || 0) >=
+              ((layerData[new_layer - 1] && layerData[new_layer - 1].depth) ||
+                0)));
+      if (!canSwitch) {
+        // ignore attempts to switch to locked layers
+        return;
       }
+      setLayer(new_layer);
+      // no console log on switching layers (by design)
     },
     // Craft a tool/item by id using the shared crafting helper
     craft: (itemId) => {
@@ -207,6 +284,8 @@ export function GameLogicProvider({ children }) {
           unlockedTools,
           autosaveEnabled,
           lastSaveAt,
+          layerProgress,
+          unlockedLayers,
         }),
 
       toString: () => {
@@ -234,6 +313,7 @@ export function GameLogicProvider({ children }) {
             unlockedTools,
             autosaveEnabled,
             lastSaveAt: now,
+            unlockedLayers,
           });
           const s = JSON.stringify(obj);
           if (!s) {
@@ -269,6 +349,7 @@ export function GameLogicProvider({ children }) {
             setCurrentTool,
             setAutoSave: setAutosaveEnabled,
             setLastSaveAt: setLastSaveAt,
+            setLayerProgress: setLayerProgress,
           });
           if (mappedRes && mappedRes.success) {
             pushConsole("Save applied", { severity: "important" });
@@ -400,7 +481,8 @@ export function GameLogicProvider({ children }) {
       if (obj && typeof obj === "object") {
         // prefer explicit lastSaveAt, but fall back to the save file timestamp if present
         if (typeof obj.lastSaveAt === "number") setLastSaveAt(obj.lastSaveAt);
-        else if (typeof obj.timestamp === "number") setLastSaveAt(obj.timestamp);
+        else if (typeof obj.timestamp === "number")
+          setLastSaveAt(obj.timestamp);
         if (typeof obj.autosaveEnabled === "boolean")
           setAutosaveEnabled(Boolean(obj.autosaveEnabled));
       }

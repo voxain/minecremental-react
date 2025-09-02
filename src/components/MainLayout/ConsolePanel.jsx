@@ -24,11 +24,21 @@ export default function ConsolePanel({ logger }) {
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    // scroll to bottom
+    // Try to scroll the last message into view so multi-line entries aren't cut off.
     try {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      const inner = el.firstElementChild;
+      const last = inner && inner.lastElementChild;
+      if (last && last.scrollIntoView) {
+        last.scrollIntoView({ behavior: "smooth", block: "end" });
+        return;
+      }
+    } catch (e) {
+      void e;
+    }
+    // fallback: ensure container is scrolled to bottom precisely
+    try {
+      el.scrollTop = el.scrollHeight - el.clientHeight;
     } catch {
-      // fallback
       el.scrollTop = el.scrollHeight;
     }
   }, [filtered.length]);
@@ -65,7 +75,7 @@ export default function ConsolePanel({ logger }) {
           ref={containerRef}
           className="overflow-y-auto h-[calc(10rem-1.5rem)]"
         >
-          <div className="px-0 py-1">
+          <div className="px-0 py-1" style={{ paddingBottom: 8 }}>
             {filtered.map((l) => {
               const sev = l && l.severity ? l.severity : "info";
               const tagMap = {

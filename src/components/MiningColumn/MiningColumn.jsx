@@ -2,6 +2,7 @@ import { LayerList } from "./LayerList";
 import { DepthMeter } from "./DepthMeter";
 import { MiningAction } from "./MiningAction";
 import { useGameLogic } from "../../contexts/GameLogicContext";
+import { layerData } from "../../data/layers";
 
 export function MiningColumn({ className = "" }) {
   const gameLogic = useGameLogic();
@@ -10,7 +11,20 @@ export function MiningColumn({ className = "" }) {
   return (
     <div className={mergedClassName}>
       <LayerList />
-      <DepthMeter depth={100} />
+      <DepthMeter
+        maxDepth={
+          (gameLogic.current_layer &&
+            layerData[gameLogic.current_layer.value] &&
+            layerData[gameLogic.current_layer.value].depth) ||
+          0
+        }
+        current={
+          (gameLogic.layer_progress &&
+            gameLogic.layer_progress.value &&
+            gameLogic.layer_progress.value[gameLogic.current_layer.value]) ||
+          0
+        }
+      />
       <MiningAction queue={gameLogic.block_queue.value} />
     </div>
   );

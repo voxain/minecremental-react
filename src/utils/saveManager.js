@@ -13,6 +13,8 @@ export const buildSaveObject = ({
   unlockedTools,
   autosaveEnabled,
   lastSaveAt,
+  layerProgress,
+  unlockedLayers,
 }) => {
   return {
     version: 1,
@@ -28,6 +30,14 @@ export const buildSaveObject = ({
     unlockedTools: unlockedTools || [],
     autosaveEnabled: Boolean(autosaveEnabled),
     lastSaveAt: typeof lastSaveAt === "number" ? lastSaveAt : null,
+    layerProgress: Array.isArray(layerProgress)
+      ? layerProgress
+      : Array(3).fill(0),
+    unlockedLayers: Array.isArray(unlockedLayers)
+      ? unlockedLayers
+      : Array.isArray(layerProgress)
+      ? layerProgress.map((_, i) => i === 0)
+      : Array(3).fill(false),
   };
 };
 
@@ -54,6 +64,7 @@ export const mapSaveToState = (obj, setters) => {
       setCurrentTool,
       setAutoSave,
       setLastSaveAt,
+      setLayerProgress,
     } = setters;
 
     if (Array.isArray(obj.block_queue)) {
@@ -92,6 +103,21 @@ export const mapSaveToState = (obj, setters) => {
       setAutoSave(Boolean(obj.autosaveEnabled));
     if (typeof obj.lastSaveAt === "number" && setLastSaveAt)
       setLastSaveAt(obj.lastSaveAt);
+
+    // restore per-layer progress if present
+    if (
+      obj.layerProgress &&
+      Array.isArray(obj.layerProgress) &&
+      setLayerProgress
+    )
+      setLayerProgress(obj.layerProgress);
+    // restore unlocked layers if present
+    if (
+      obj.unlockedLayers &&
+      Array.isArray(obj.unlockedLayers) &&
+      setters.setUnlockedLayers
+    )
+      setters.setUnlockedLayers(obj.unlockedLayers);
 
     return { success: true };
   } catch {
