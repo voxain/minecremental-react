@@ -11,15 +11,118 @@ import {
 } from "../voxain-radix/tabs";
 import { useGameLogic } from "../../contexts/GameLogicContext";
 import { mineBlock } from "../../utils/mining";
+import { blockData } from "../../data/blocks";
+import { useState } from "react";
+import SavePanel from "./SavePanel";
+import ConsolePanel from "./ConsolePanel";
 
 export function MainLayout() {
   const gameLogic = useGameLogic();
+  const [exportText, setExportText] = useState("");
+  const [importText, setImportText] = useState("");
+  const logger = gameLogic && gameLogic.logger ? gameLogic.logger : null;
 
+  // Helper: attempt to craft a tool via shared craftItem helper
+  // Keeps UI code concise and centralizes logging for craft attempts.
   function craftTool(itemId) {
     const itemDef = toolsData[itemId];
     const result = craftItem(gameLogic, itemDef);
     if (result && result.success) console.log("Crafted", itemId);
     else console.log("Failed to craft:", result && result.reason);
+  }
+
+  // Format a recipe object into a human-readable string, e.g. {wood:10} -> "10x Wood"
+  function formatReqText(recipe = {}) {
+    return Object.entries(recipe)
+      .map(
+        ([mat, qty]) => `${qty}x ${mat.charAt(0).toUpperCase()}${mat.slice(1)}`
+      )
+      .join(", ");
+  }
+
+  // Small helpers to check ownership/unlock state
+  function isOwned(id) {
+    return (
+      gameLogic.tools &&
+      Array.isArray(gameLogic.tools.value) &&
+      gameLogic.tools.value.includes(id)
+    );
+  }
+
+  function isUnlocked(id) {
+    return (
+      gameLogic.unlocked &&
+      Array.isArray(gameLogic.unlocked.value) &&
+      gameLogic.unlocked.value.includes(id)
+    );
+  }
+
+  // Render the craftable items list. Extracted to declutter JSX below.
+  function renderCraftList() {
+    return Object.values(toolsData)
+      .filter((t) => t && t.recipe)
+      .map((item) => {
+        const id = item.id;
+        const owned = isOwned(id);
+
+        // Historical visibility rule: stone pickaxe is only visible after wooden pickaxe is unlocked
+        if (id === "pickaxe_stone" && !isUnlocked("pickaxe_stone")) return null;
+
+        const craftable = isCraftable(gameLogic, item) && !owned;
+
+        return (
+          <div
+            key={id}
+            role="button"
+            aria-disabled={!craftable}
+            onClick={() => {
+              if (!craftable) return;
+              craftTool(id);
+            }}
+            className={
+              "border-1 p-3 w-50 mt-2 " +
+              (craftable ? "cursor-pointer hover:bg-slate-100" : "opacity-50")
+            }
+          >
+            <h1 className="text-lg">{item.name}</h1>
+            <p>Requires: {formatReqText(item.recipe)}</p>
+            {owned ? <p className="text-sm">(Owned)</p> : null}
+          </div>
+        );
+      });
+  }
+
+  function buildExport() {
+    if (!gameLogic || !gameLogic.save) return;
+    const s = gameLogic.save.toString();
+    if (!s) {
+      logger &&
+        logger.push &&
+        logger.push("Failed to build export string", {
+          color: "red",
+          severity: "error",
+        });
+      return;
+    }
+    setExportText(s);
+    logger &&
+      logger.push &&
+      logger.push("Export ready", { color: "green", severity: "important" });
+  }
+
+  function doExportToLocal() {
+    if (!gameLogic || !gameLogic.save) return;
+    gameLogic.save.saveToLocal();
+  }
+
+  function doLoadFromLocal() {
+    if (!gameLogic || !gameLogic.save) return;
+    gameLogic.save.loadFromLocal();
+  }
+
+  function doImportString() {
+    if (!gameLogic || !gameLogic.save) return;
+    gameLogic.save.loadFromString(importText);
   }
 
   return (
@@ -77,51 +180,7 @@ export function MainLayout() {
             </TabsContent>
             <TabsContent value="craft">
               <h1 className="text-xl">Crafting</h1>
-              {
-                // simplified: use helper to decide craftability
-              }
-              <div
-                role="button"
-                aria-disabled={!isCraftable(gameLogic, toolsData.pickaxe_wood)}
-                onClick={() => {
-                  if (!isCraftable(gameLogic, toolsData.pickaxe_wood)) return;
-                  craftTool("pickaxe_wood");
-                }}
-                className={
-                  "border-1 p-3 w-50 " +
-                  (isCraftable(gameLogic, toolsData.pickaxe_wood)
-                    ? "cursor-pointer hover:bg-slate-100"
-                    : "opacity-50")
-                }
-              >
-                <h1 className="text-lg">Wooden Pickaxe</h1>
-                <p>Requires: 10x Wood</p>
-              </div>
-              {/* Stone pickaxe: only visible after wooden pickaxe is owned */}
-              {gameLogic.tools &&
-              Array.isArray(gameLogic.tools.value) &&
-              gameLogic.tools.value.includes("pickaxe_wood") ? (
-                <div
-                  role="button"
-                  aria-disabled={
-                    !isCraftable(gameLogic, toolsData.pickaxe_stone)
-                  }
-                  onClick={() => {
-                    if (!isCraftable(gameLogic, toolsData.pickaxe_stone))
-                      return;
-                    craftTool("pickaxe_stone");
-                  }}
-                  className={
-                    "border-1 p-3 w-50 mt-2 " +
-                    (isCraftable(gameLogic, toolsData.pickaxe_stone)
-                      ? "cursor-pointer hover:bg-slate-100"
-                      : "opacity-50")
-                  }
-                >
-                  <h1 className="text-lg">Stone Pickaxe</h1>
-                  <p>Requires: 5x Wood, 30x Stone</p>
-                </div>
-              ) : null}
+              {renderCraftList()}
             </TabsContent>
           </TabsRoot>
         </div>
@@ -130,7 +189,7 @@ export function MainLayout() {
           <h1 className="text-xl">Inventory</h1>
           {Object.entries(gameLogic.inventory.content).map(
             ([itemId, quantity]) => {
-              const item = null; // keep same behavior (lookup by id not required here)
+              const item = blockData[itemId];
               const label = item ? item.name : itemId;
               return (
                 <div key={itemId}>
@@ -139,6 +198,40 @@ export function MainLayout() {
               );
             }
           )}
+          <hr className="my-2" />
+          <SavePanel
+            exportText={exportText}
+            importText={importText}
+            setImportText={setImportText}
+            onBuild={() => buildExport()}
+            onCopy={() =>
+              navigator.clipboard && navigator.clipboard.writeText(exportText)
+            }
+            onSaveLocal={() => doExportToLocal()}
+            onLoadLocal={() => doLoadFromLocal()}
+            onImport={() => doImportString()}
+            onClear={() => {
+              setImportText("");
+              setExportText("");
+              logger && logger.clear && logger.clear();
+            }}
+            autosaveEnabled={
+              gameLogic && gameLogic.save
+                ? gameLogic.save.autosaveEnabled
+                : false
+            }
+            onToggleAutoSave={(v) =>
+              gameLogic &&
+              gameLogic.save &&
+              gameLogic.save.setAutoSave &&
+              gameLogic.save.setAutoSave(v)
+            }
+            lastSaveAt={
+              gameLogic && gameLogic.save ? gameLogic.save.lastSaveAt : null
+            }
+          />
+
+          <ConsolePanel logger={logger} />
         </div>
       </div>
     </>

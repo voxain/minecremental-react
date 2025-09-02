@@ -144,7 +144,7 @@ export function MiningAction({ queue }) {
             onClick={() =>
               gameLogic.skipCurrentBlock && gameLogic.skipCurrentBlock()
             }
-            className="bg-red-600 text-white text-sm px-3 py-1 rounded hover:bg-red-700"
+            className="bg-red-600! text-white text-sm px-3 py-1 rounded hover:bg-red-700!"
             title="Skip current block"
           >
             Skip

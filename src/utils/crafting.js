@@ -6,6 +6,16 @@ export function craftItem(gameLogic, itemDef) {
   if (!itemDef || !itemDef.recipe)
     return { success: false, reason: "no_recipe" };
 
+  // Prevent crafting an item that's already owned
+  if (
+    itemDef.id &&
+    gameLogic.tools &&
+    Array.isArray(gameLogic.tools.value) &&
+    gameLogic.tools.value.includes(itemDef.id)
+  ) {
+    return { success: false, reason: "already_owned" };
+  }
+
   const inv = (gameLogic.inventory && gameLogic.inventory.content) || {};
 
   // check requirements
@@ -39,6 +49,48 @@ export function craftItem(gameLogic, itemDef) {
     } catch {
       // ignore
     }
+  }
+
+  // Manage unlocked tools visibility separate from ownership if available
+  if (itemDef.id && gameLogic.unlocked && gameLogic.unlocked.add) {
+    try {
+      // crafting a wood pickaxe could unlock stone pickaxe for crafting
+      if (
+        itemDef.id === "pickaxe_wood" &&
+        gameLogic.unlocked &&
+        gameLogic.unlocked.add
+      ) {
+        gameLogic.unlocked.add("pickaxe_stone");
+      }
+      // ensure the crafted tool is marked unlocked as well
+      gameLogic.unlocked.add(itemDef.id);
+    } catch {
+      // ignore
+    }
+  }
+
+  // Notify player via logger if available
+  try {
+    const name = itemDef.name || itemDef.id || "item";
+    if (gameLogic && gameLogic.logger && gameLogic.logger.push) {
+      gameLogic.logger.push(`Crafted ${name}`, {
+        bold: true,
+        severity: "important",
+        meta: { id: itemDef.id },
+      });
+      // if unlocking occurred, inform about unlocked items (simple heuristic)
+      if (
+        itemDef.id === "pickaxe_wood" &&
+        gameLogic.logger &&
+        gameLogic.logger.push
+      ) {
+        gameLogic.logger.push("Unlocked Stone Pickaxe for crafting", {
+          severity: "important",
+        });
+      }
+    }
+  } catch {
+    // ignore logging errors
   }
 
   return { success: true };

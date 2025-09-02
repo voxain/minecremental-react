@@ -13,7 +13,7 @@ export const blockData = {
   dirt: {
     id: "dirt",
     name: "Dirt",
-    hardness: 2,
+    hardness: 3,
     toughness: 1,
     class: "soil",
     image: import.meta.env.BASE_URL + "img/blocks/dirt.png",
@@ -21,7 +21,7 @@ export const blockData = {
   stone: {
     id: "stone",
     name: "Stone",
-    hardness: 4,
+    hardness: 8,
     toughness: 2,
     class: "rock",
     image: import.meta.env.BASE_URL + "img/blocks/stone.png",
@@ -29,7 +29,7 @@ export const blockData = {
   coal: {
     id: "coal",
     name: "Coal",
-    hardness: 8,
+    hardness: 16,
     toughness: 2,
     class: "rock",
     image: import.meta.env.BASE_URL + "img/blocks/coal.png",
@@ -37,7 +37,7 @@ export const blockData = {
   iron: {
     id: "iron",
     name: "Iron",
-    hardness: 8,
+    hardness: 18,
     toughness: 3,
     class: "rock",
     image: import.meta.env.BASE_URL + "img/blocks/iron.png",
@@ -45,7 +45,7 @@ export const blockData = {
   emerald: {
     id: "emerald",
     name: "Emerald",
-    hardness: 12,
+    hardness: 36,
     toughness: 4,
     class: "rock",
     image: import.meta.env.BASE_URL + "img/blocks/emerald.png",
